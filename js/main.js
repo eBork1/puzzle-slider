@@ -1,10 +1,39 @@
-document.body.onload = layout;
-let count = 0;
+document.body.onload = onStart;
+tileContainer = document.createElement('div');
 
+// Variables
+let tiles = [];
+let indexOfBlankTile = 3;
 
-// Create UI
+// Objects
+class Tile {
+    constructor(tileName) {
+        this.tileName = tileName;
+    }
+}
+
+// Handle initializing the application
+function onStart() {
+    // Create Tiles, use letters instead of numbers to  not mix up tile and col
+    const FIRST_CHAR_CODE = 97;
+    for (var i = 0; i < 16; i++) {
+        var newTileName = String.fromCharCode(FIRST_CHAR_CODE + i);
+        var newTile = new Tile(newTileName);
+        tiles[i] = newTile;
+
+        if (i == indexOfBlankTile) {
+            tiles[indexOfBlankTile].tileName = '';
+        }
+    }
+    console.log(tiles);
+
+    // Draw layout
+    layout();
+}
+
+// Create UI, 1 row 16 col, 4x4 grid
 function layout() {
-    //title
+    // Title
     var title = document.createElement('h2');
     title.innerHTML = "Puzzle Slider";
     title.className = "h2 text-center";
@@ -14,51 +43,106 @@ function layout() {
     var container = document.createElement('div');
     container.setAttribute('class', 'container');
 
-    // Row
-    var row = document.createElement('div');
-    row.setAttribute('class', 'row justify-content-center');
-    
-    // Columns
-    counter = 0;
-    for (var i = 0; i < 16; i++) {
-        var col = document.createElement('div');
-        col.setAttribute('class', 'col-3 border text-center');
-        col.id = i;
-        col.addEventListener('click', handleClick);
-        row.appendChild(col);
-    }
-    container.appendChild(row);
+    // Tile Container
+    tileContainer.setAttribute('class', 'row justify-content-center');
+    drawTiles();
+
+    container.appendChild(tileContainer);
     app.appendChild(container);
+
+    // Shuffle button
+    var shuffleBtn = document.createElement('button');
+    shuffleBtn.setAttribute('type', 'button');
+    shuffleBtn.setAttribute('class', 'btn-primary');
+    shuffleBtn.innerHTML = "Shuffle";
+    shuffleBtn.addEventListener('click', shuffle);
+    container.appendChild(shuffleBtn);
 }
 
-// Tile constructor 
-function tileConstructor(tileNumber, position, type) {
-    this.tileNumber = tileNumber;
-    this.position = position;
-    this.type = type;
-    let displayText = document.createElement('div');
-    displayText.innerHTML = tileNumber;
-    this.content = displayText;
-}
+// Redraw the game board based off the updates tiles array
+function drawTiles() {
+    tileContainer.innerHTML = '';
 
-// Create moving tile objects
-let tile = [];
-for (var i = 1; i <= 16; i++) {
-    count++;
-
-    tile[i] = {
-        tileNumber: count,
-        position: count,
-        type: 1,
+    for (var i = 0; i < tiles.length; i++) {
+        var newTile = document.createElement('div');
+        newTile.setAttribute('class', 'col-3 border text-center');
+        newTile.id = i;
+        newTile.innerHTML = tiles[i].tileName;
+        newTile.addEventListener('click', handleClick);
+        tileContainer.appendChild(newTile);
     }
 }
-console.log(tile);
 
-// Get tiles on grid
-
-
-// Get click, 
+// Swap the blank tile with the clicked tile 
 function handleClick() {
-    console.log("worked");
-   let getClick = this.id;
+    let indexOfTheTileClicked = parseInt(this.id);
+
+    console.log({ indexOfTheTileClicked, indexOfBlankTile })
+    console.log({
+        "+1": indexOfTheTileClicked + 1,
+        "-1": indexOfTheTileClicked - 1,
+        "+4": indexOfTheTileClicked + 4,
+        "-4": indexOfTheTileClicked - 4
+    })
+
+    function swapTiles() {
+        // Swap the blank tile with the selected tile
+        console.log("before", tiles)
+        let tileClicked = tiles[indexOfTheTileClicked]
+        tiles[indexOfTheTileClicked] = tiles[indexOfBlankTile];
+        tiles[indexOfBlankTile] = tileClicked;
+        indexOfBlankTile = indexOfTheTileClicked;
+        console.log("after", tiles)
+        // Redraw the board based off the updated array
+        drawTiles();
+    }
+
+    // If the tile clicked is either 1 or 4 spots away from the blank tile in the array, swap tiles
+    if ((indexOfTheTileClicked % 4) == 1 ||
+        (indexOfTheTileClicked % 4) == 2) {
+        console.log('in first if')
+        if (indexOfTheTileClicked - 1 == indexOfBlankTile ||
+            indexOfTheTileClicked + 1 == indexOfBlankTile ||
+            indexOfTheTileClicked - 4 == indexOfBlankTile ||
+            indexOfTheTileClicked + 4 == indexOfBlankTile) {
+
+            swapTiles();
+        }
+    }
+    if (((indexOfTheTileClicked + 1) % 4) == 0) {
+        console.log('in first if')
+        if (indexOfTheTileClicked - 1 == indexOfBlankTile ||
+            indexOfTheTileClicked - 4 == indexOfBlankTile ||
+            indexOfTheTileClicked + 4 == indexOfBlankTile) {
+
+
+            swapTiles();
+        }
+    }
+    if ((indexOfTheTileClicked % 4) == 0) {
+        console.log('in second if')
+        if (indexOfTheTileClicked + 1 == indexOfBlankTile ||
+            indexOfTheTileClicked + 4 == indexOfBlankTile ||
+            indexOfTheTileClicked - 4 == indexOfBlankTile) {
+
+            swapTiles();
+        }
+    }
 }
+
+function shuffle() {
+
+    const CLICK_AMOUNT = 500
+
+    for (var i = 0; i < CLICK_AMOUNT; i++) {
+        let randomNum = Math.floor(Math.random() * 16);
+        document.getElementById(randomNum).click();
+    }
+}
+
+function checkWin() {
+
+
+}
+
+
